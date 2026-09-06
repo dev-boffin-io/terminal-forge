@@ -8,12 +8,12 @@ import java.io.File
 
 object Rootfs {
     var isInstalled = mutableStateOf(false)
-    var isCustomInstalled = mutableStateOf(false)
+    var isNetHunterInstalled = mutableStateOf(false)
     var isBoffinInstalled = mutableStateOf(false)
 
     fun checkInstallation(context: Context) {
         isInstalled.value = isRootfsInstalled(context)
-        isCustomInstalled.value = isCustomRootfsInstalled(context)
+        isNetHunterInstalled.value = isNetHunterRootfsInstalled(context)
         isBoffinInstalled.value = isBoffinRootfsInstalled(context)
     }
 
@@ -24,11 +24,9 @@ object Rootfs {
         return isExtracted || isArchivePresent
     }
 
-    // "Custom" session (formerly the dedicated NetHunter feature) - dir/archive names kept
-    // as "nethunter" for backwards compatibility with already-downloaded installs.
-    fun isCustomRootfsInstalled(context: Context): Boolean {
-        val customDir = context.localDir().child("nethunter")
-        val isExtracted = customDir.exists() && (customDir.list()?.any { it != "root" && it != "tmp" } == true)
+    fun isNetHunterRootfsInstalled(context: Context): Boolean {
+        val netHunterDir = context.localDir().child("nethunter")
+        val isExtracted = netHunterDir.exists() && (netHunterDir.list()?.any { it != "root" && it != "tmp" } == true)
         val isArchivePresent = context.filesDir.child("nethunter.tar.xz").exists()
         return isExtracted || isArchivePresent
     }

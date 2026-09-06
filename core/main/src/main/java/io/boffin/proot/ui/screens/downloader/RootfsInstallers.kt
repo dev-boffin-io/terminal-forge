@@ -13,7 +13,7 @@ class InstallException(message: String) : Exception(message)
 /**
  * Streams a URL's response body into context.filesDir/<outputFileName>, chunked with a
  * progress callback, via a .part temp file + atomic rename on success. Shared by the
- * manifest-indirected download (CustomInstaller) and the direct user-entered URL download
+ * manifest-indirected download (NetHunterInstaller) and the direct user-entered URL download
  * (Boffin).
  */
 private fun downloadUrlToFile(
@@ -116,11 +116,11 @@ fun downloadDirectRootfs(
 }
 
 /**
- * "Custom" session (formerly labelled NetHunter in the UI). Manifest/output filenames are
- * unchanged from the original NetHunter feature so existing installs that already downloaded
- * this rootfs don't need to re-download it after the rename.
+ * NetHunter session (was briefly relabelled "Custom" in the UI; renamed back since "Custom"
+ * is now upstream's own, differently implemented Custom Session/chroot feature). Manifest/
+ * output filenames unchanged throughout so existing installs don't need to re-download.
  */
-object CustomInstaller {
+object NetHunterInstaller {
     private const val MANIFEST_URL =
         "https://raw.githubusercontent.com/dev-boffin-io/proot-forge/main/nethunter-manifest.json"
 
@@ -131,7 +131,7 @@ object CustomInstaller {
             outputFileName = "nethunter.tar.xz",
             connectTimeoutMs = 15_000,
             readTimeoutMs = 15_000,
-            label = "Custom",
+            label = "NetHunter",
             onProgress = onProgress
         )
     }

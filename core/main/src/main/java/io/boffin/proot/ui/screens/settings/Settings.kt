@@ -63,7 +63,10 @@ object WorkingMode {
     // Was NETHUNTER; kept the same int value (2) since nothing else changed about how this
     // mode works under the hood, only its UI label and the fact its manifest URL is now
     // user-swappable to point at any rootfs, not just NetHunter's.
-    const val CUSTOM = 2
+    // Named NETHUNTER again (was briefly CUSTOM) - "Custom" is now upstream's own, differently
+    // implemented Custom Session/chroot feature, so this frees the name up to avoid confusion.
+    // Same int value (2) as before, so nothing about what's stored/persisted changes.
+    const val NETHUNTER = 2
     const val BOFFIN = 3
 }
 

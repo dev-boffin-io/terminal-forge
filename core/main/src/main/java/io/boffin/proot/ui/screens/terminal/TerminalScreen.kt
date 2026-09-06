@@ -38,7 +38,7 @@ import com.rk.settings.Settings
 import io.boffin.proot.ui.activities.terminal.MainActivity
 import io.boffin.proot.ui.activities.terminal.MainViewModel
 import io.boffin.proot.ui.components.SetStatusBarTextColor
-import io.boffin.proot.ui.screens.downloader.CustomInstaller
+import io.boffin.proot.ui.screens.downloader.NetHunterInstaller
 import io.boffin.proot.ui.screens.downloader.downloadDirectRootfs
 import io.boffin.proot.ui.screens.settings.SettingsCard
 import io.boffin.proot.ui.screens.settings.WorkingMode
@@ -118,8 +118,8 @@ fun TerminalScreen(
                             showBoffinUrlDialog = true
                         }
                     }
-                    WorkingMode.CUSTOM -> {
-                        if (Rootfs.isCustomRootfsInstalled(context)) {
+                    WorkingMode.NETHUNTER -> {
+                        if (Rootfs.isNetHunterRootfsInstalled(context)) {
                             proceedToCreateSession(mode)
                         } else {
                             showAddDialog = false
@@ -129,7 +129,7 @@ fun TerminalScreen(
                             scope.launch {
                                 withContext(Dispatchers.IO) {
                                     try {
-                                        CustomInstaller.downloadIfNeeded(context) { pct ->
+                                        NetHunterInstaller.downloadIfNeeded(context) { pct ->
                                             downloadProgress = pct
                                         }
                                         withContext(Dispatchers.Main) {
@@ -152,7 +152,7 @@ fun TerminalScreen(
     }
 
     if (downloadingMode != null) {
-        val label = if (downloadingMode == WorkingMode.CUSTOM) "Custom" else "Boffin"
+        val label = if (downloadingMode == WorkingMode.NETHUNTER) "NetHunter" else "Boffin"
         RootfsDownloadDialog(
             label = label,
             verb = "Downloading",
@@ -293,9 +293,9 @@ private fun AddSessionDialog(onDismiss: () -> Unit, onCreateSession: (Int) -> Un
             )
             if (isArm64) {
                 SettingsCard(
-                    title = { Text("Custom") },
+                    title = { Text("NetHunter") },
                     description = { Text("Kali NetHunter (full, arm64 only)") },
-                    onClick = { onCreateSession(WorkingMode.CUSTOM) }
+                    onClick = { onCreateSession(WorkingMode.NETHUNTER) }
                 )
             }
             SettingsCard(

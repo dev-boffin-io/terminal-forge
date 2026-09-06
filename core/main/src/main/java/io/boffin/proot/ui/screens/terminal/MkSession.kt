@@ -39,7 +39,7 @@ object MkSession {
             )
 
             val workingDir = pendingCommand?.workingDir ?: when (workingMode) {
-                WorkingMode.CUSTOM -> nethunterHomeDir().path
+                WorkingMode.NETHUNTER -> nethunterHomeDir().path
                 WorkingMode.BOFFIN -> boffinHomeDir().path
                 else -> alpineHomeDir().path
             }
@@ -82,12 +82,12 @@ object MkSession {
                 "PROOT_LOADER=${applicationInfo.nativeLibraryDir}/libloader.so",
                 "PROOT=${applicationInfo.nativeLibraryDir}/libproot.so",
                 "DISTRO_DIR=${when (workingMode) {
-                    WorkingMode.CUSTOM -> "nethunter"
+                    WorkingMode.NETHUNTER -> "nethunter"
                     WorkingMode.BOFFIN -> "boffin"
                     else -> "alpine"
                 }}",
                 "DISTRO_ARCHIVE=${when (workingMode) {
-                    WorkingMode.CUSTOM -> "nethunter.tar.xz"
+                    WorkingMode.NETHUNTER -> "nethunter.tar.xz"
                     WorkingMode.BOFFIN -> "boffin.tar.gz"
                     else -> "alpine.tar.gz"
                 }}",
@@ -118,7 +118,7 @@ object MkSession {
 
             val args: Array<String>
             val shell = if (pendingCommand == null) {
-                args = if (workingMode == WorkingMode.ALPINE || workingMode == WorkingMode.CUSTOM || workingMode == WorkingMode.BOFFIN) {
+                args = if (workingMode == WorkingMode.ALPINE || workingMode == WorkingMode.NETHUNTER || workingMode == WorkingMode.BOFFIN) {
                     arrayOf("-c", initFile.absolutePath)
                 } else {
                     arrayOf()
