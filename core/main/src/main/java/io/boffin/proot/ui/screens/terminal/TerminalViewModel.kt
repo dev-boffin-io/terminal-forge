@@ -13,6 +13,7 @@ import com.google.android.material.R
 import com.rk.settings.Settings
 import io.boffin.proot.service.SessionService
 import io.boffin.proot.ui.activities.terminal.MainActivity
+import io.boffin.proot.ui.screens.settings.WorkingMode
 import io.boffin.proot.ui.screens.terminal.virtualkeys.VirtualKeysListener
 import io.boffin.proot.ui.screens.terminal.virtualkeys.VirtualKeysView
 import com.termux.view.TerminalView
@@ -50,7 +51,16 @@ class TerminalViewModel : ViewModel() {
         val client = TerminalBackEnd(terminal, activity)
         
         val session = sessionBinder.getSession(sessionId)
-            ?: sessionBinder.createSession(sessionId, client, Settings.working_Mode)
+            ?: run {
+                val service = sessionBinder.getService()
+                val custom = if (sessionId == service.currentSession.value.first) service.currentCustomSession else null
+                if (custom != null) {
+                    val pendingCommand = MkSession.buildCustomPendingCommand(context, custom)
+                    sessionBinder.createSession(sessionId, client, WorkingMode.ALPINE, pendingCommand)
+                } else {
+                    sessionBinder.createSession(sessionId, client, Settings.working_Mode)
+                }
+            }
             
         session.updateTerminalSessionClient(client)
         terminal.setBackgroundColor(android.graphics.Color.TRANSPARENT)

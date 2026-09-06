@@ -13,10 +13,10 @@ import androidx.navigation.NavHostController
 import com.rk.libcommons.*
 import com.rk.resources.strings
 import io.boffin.proot.ui.activities.terminal.MainActivity
+import io.boffin.proot.ui.screens.terminal.ExecMode
 import io.boffin.proot.ui.screens.terminal.Rootfs
 import io.boffin.proot.ui.screens.terminal.TerminalScreen
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
@@ -27,6 +27,19 @@ import java.net.URL
 // files. Update the tag if you publish the rootfs files under a different release.
 private const val ROOTFS_RELEASE_BASE_URL =
     "https://github.com/dev-boffin-io/proot-forge/releases/download/rootfs-v1"
+
+private fun hasRootAccess(): Boolean {
+    val paths = listOf("/system/bin/su", "/system/xbin/su", "/sbin/su", "/su/bin/su")
+    if (paths.none { File(it).exists() }) return false
+    return try {
+        val process = ProcessBuilder("su", "-c", "id").redirectErrorStream(true).start()
+        val output = process.inputStream.bufferedReader().readText()
+        val exited = process.waitFor()
+        exited == 0 && output.contains("uid=0")
+    } catch (e: Exception) {
+        false
+    }
+}
 
 @Composable
 fun SetupScreen(
@@ -40,6 +53,18 @@ fun SetupScreen(
     var isSetupComplete by remember { mutableStateOf(Rootfs.isRootfsInstalled(context)) }
     var error by remember { mutableStateOf<String?>(null) }
     var progress by remember { mutableIntStateOf(0) }
+    var showExecModeDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        if (Rootfs.execMode.value == null) {
+            val rooted = withContext(Dispatchers.IO) { hasRootAccess() }
+            if (rooted) {
+                showExecModeDialog = true
+            } else {
+                Rootfs.setExecMode(ExecMode.PROOT)
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         if (isSetupComplete) {
@@ -133,5 +158,32 @@ fun SetupScreen(
         } else {
             TerminalScreen(mainActivity = mainActivity, navController = navController)
         }
+    }
+
+    if (showExecModeDialog) {
+        AlertDialog(
+            onDismissRequest = { /* must choose one */ },
+            title = { Text("Root access detected") },
+            text = {
+                Text(
+                    "This device appears to be rooted. Proot Forge's main session can run " +
+                        "either through proot (userspace, no root needed, works everywhere) or " +
+                        "through a real chroot (uses root, generally faster and more compatible). " +
+                        "You can change this later in Settings \u2192 Execution Mode."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    Rootfs.setExecMode(ExecMode.CHROOT)
+                    showExecModeDialog = false
+                }) { Text("Use chroot (root)") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    Rootfs.setExecMode(ExecMode.PROOT)
+                    showExecModeDialog = false
+                }) { Text("Use proot") }
+            }
+        )
     }
 }

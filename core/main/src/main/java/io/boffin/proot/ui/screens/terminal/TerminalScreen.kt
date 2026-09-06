@@ -84,9 +84,13 @@ fun TerminalScreen(
         withContext(Dispatchers.IO) {
             if (context.filesDir.child("background").exists().not()) {
                 TerminalUtils.darkText.value = !isDarkMode
-            } else if (terminalViewModel.bitmap == null) {
-                BitmapFactory.decodeFile(context.filesDir.child("background").absolutePath)?.asImageBitmap()?.let {
-                    terminalViewModel.bitmap = it
+                TerminalUtils.hasCustomBackground.value = false
+            } else {
+                TerminalUtils.hasCustomBackground.value = true
+                if (terminalViewModel.bitmap == null) {
+                    BitmapFactory.decodeFile(context.filesDir.child("background").absolutePath)?.asImageBitmap()?.let {
+                        terminalViewModel.bitmap = it
+                    }
                 }
             }
         }
@@ -147,6 +151,14 @@ fun TerminalScreen(
                     }
                     else -> proceedToCreateSession(mode)
                 }
+            },
+            onCreateCustomSession = { custom ->
+                val terminal = terminalViewModel.terminalView ?: return@AddSessionDialog
+                val client = TerminalBackEnd(terminal, mainActivity)
+                val pendingCommand = MkSession.buildCustomPendingCommand(context, custom)
+                sessionBinder.createSession(custom.name, client, WorkingMode.ALPINE, pendingCommand)
+                terminalViewModel.changeSession(context, sessionBinder, custom.name)
+                showAddDialog = false
             }
         )
     }
@@ -277,8 +289,13 @@ private fun BackgroundImage(viewModel: TerminalViewModel) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AddSessionDialog(onDismiss: () -> Unit, onCreateSession: (Int) -> Unit) {
+private fun AddSessionDialog(
+    onDismiss: () -> Unit,
+    onCreateSession: (Int) -> Unit,
+    onCreateCustomSession: (CustomSession) -> Unit
+) {
     val isArm64 = "arm64-v8a" in Build.SUPPORTED_ABIS
+    val customSessions = remember { CustomSessions.getAll() }
     BasicAlertDialog(onDismissRequest = onDismiss) {
         PreferenceGroup {
             SettingsCard(
@@ -303,6 +320,13 @@ private fun AddSessionDialog(onDismiss: () -> Unit, onCreateSession: (Int) -> Un
                 description = { Text("Debian 12 XFCE4 desktop (enter rootfs URL)") },
                 onClick = { onCreateSession(WorkingMode.BOFFIN) }
             )
+            customSessions.forEach { session ->
+                SettingsCard(
+                    title = { Text(session.name) },
+                    description = { Text(session.shellPath) },
+                    onClick = { onCreateCustomSession(session) }
+                )
+            }
         }
     }
 }
