@@ -198,6 +198,65 @@ object MkSession {
             env = null
         )
     }
+
+    /**
+     * Builds the shell/args for running a script the user opened the app with (via the .sh
+     * VIEW intent filter) inside a chosen session type. Applies the same reasoning as
+     * [createSession] for which init file to run for Alpine/NetHunter/Boffin (chroot vs proot
+     * only matters for Alpine), a plain custom-session script wrapper when a CustomSession was
+     * picked, or a bare shell invocation for Android.
+     */
+    fun buildScriptPendingCommand(
+        context: Context,
+        script: File,
+        workingMode: Int,
+        custom: CustomSession? = null
+    ): PendingCommand {
+        val workingDir = script.parentFile?.absolutePath
+        return if (custom != null) {
+            val sysSh = File("/system/bin/sh")
+            if (sysSh.canExecute()) {
+                PendingCommand(
+                    shell = sysSh.absolutePath,
+                    args = arrayOf("-c", custom.shellPath, "sh", script.absolutePath),
+                    workingDir = workingDir,
+                    env = null
+                )
+            } else {
+                val proot = "${context.applicationInfo.nativeLibraryDir}/libproot.so"
+                PendingCommand(
+                    shell = proot,
+                    args = arrayOf(
+                        "-r", "/",
+                        "-b", "/dev",
+                        "-b", "/proc",
+                        "-b", "/sdcard",
+                        "-0",
+                        "sh", custom.shellPath, script.absolutePath
+                    ),
+                    workingDir = workingDir,
+                    env = null
+                )
+            }
+        } else if (workingMode == WorkingMode.ALPINE || workingMode == WorkingMode.NETHUNTER || workingMode == WorkingMode.BOFFIN) {
+            val useChroot = workingMode == WorkingMode.ALPINE && Rootfs.execMode.value == ExecMode.CHROOT
+            val initFile = context.localBinDir()
+                .child(if (useChroot) "init-host-chroot" else "init-host")
+            PendingCommand(
+                shell = "/system/bin/sh",
+                args = arrayOf("-c", initFile.absolutePath, "sh", script.absolutePath),
+                workingDir = workingDir,
+                env = null
+            )
+        } else {
+            PendingCommand(
+                shell = "/system/bin/sh",
+                args = arrayOf("-c", script.absolutePath),
+                workingDir = workingDir,
+                env = null
+            )
+        }
+    }
 }
 
 data class PendingCommand(
