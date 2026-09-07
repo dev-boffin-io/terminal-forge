@@ -2,14 +2,12 @@ package io.boffin.proot.ui.screens.terminal
 
 import android.content.Context
 import android.graphics.Typeface
-import android.util.TypedValue
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.lifecycle.ViewModel
-import com.google.android.material.R
 import com.rk.settings.Settings
 import io.boffin.proot.service.SessionService
 import io.boffin.proot.ui.activities.terminal.MainActivity
@@ -68,16 +66,16 @@ class TerminalViewModel : ViewModel() {
         terminal.setTerminalViewClient(client)
         
         terminal.post {
-            val typedValue = TypedValue()
-            context.theme.resolveAttribute(R.attr.colorOnSurface, typedValue, true)
+            val fgColor = TerminalUtils.getViewColor()
+            val bgColor = TerminalUtils.getBackgroundColor()
             terminal.keepScreenOn = true
             terminal.requestFocus()
             terminal.isFocusableInTouchMode = true
 
             terminal.mEmulator?.mColors?.mCurrentColors?.apply {
-                set(256, typedValue.data)
-                set(257, TerminalUtils.getBackgroundColor())
-                set(258, typedValue.data)
+                set(256, fgColor)
+                set(257, bgColor)
+                set(258, fgColor)
             }
         }
         

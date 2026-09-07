@@ -24,6 +24,7 @@ import io.boffin.proot.ui.navHosts.MainActivityNavHost
 import io.boffin.proot.ui.routes.MainActivityRoutes
 import io.boffin.proot.ui.screens.terminal.TerminalViewModel
 import io.boffin.proot.ui.theme.KarbonTheme
+import io.boffin.proot.ui.theme.ThemeManager
 
 class MainActivity : ComponentActivity() {
     val viewModel: MainViewModel by viewModels()
@@ -40,6 +41,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        ThemeManager.apply(this)
         enableEdgeToEdge()
         requestPermission()
 

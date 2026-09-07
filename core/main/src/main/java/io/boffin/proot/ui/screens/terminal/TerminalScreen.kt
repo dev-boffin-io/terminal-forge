@@ -56,7 +56,8 @@ fun TerminalScreen(
     terminalViewModel: TerminalViewModel = viewModel(mainActivity)
 ) {
     val context = LocalContext.current
-    val isDarkMode = isSystemInDarkTheme()
+    val systemDark = isSystemInDarkTheme()
+    val isDarkActive = if (mainViewModel.followSystemTheme) systemDark else mainViewModel.isDarkMode
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val configuration = LocalConfiguration.current
@@ -80,10 +81,10 @@ fun TerminalScreen(
 
     var showBoffinUrlDialog by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(isDarkActive) {
         withContext(Dispatchers.IO) {
             if (context.filesDir.child("background").exists().not()) {
-                TerminalUtils.darkText.value = !isDarkMode
+                TerminalUtils.darkText.value = !isDarkActive
                 TerminalUtils.hasCustomBackground.value = false
             } else {
                 TerminalUtils.hasCustomBackground.value = true
@@ -106,7 +107,7 @@ fun TerminalScreen(
         scope.launch { drawerState.close() }
     }
 
-    val isDarkIcons = if (drawerState.isClosed) TerminalUtils.darkText.value else !isDarkMode
+    val isDarkIcons = if (drawerState.isClosed) TerminalUtils.darkText.value else !isDarkActive
     SetStatusBarTextColor(isDarkIcons = isDarkIcons)
 
     if (showAddDialog && sessionBinder != null) {
