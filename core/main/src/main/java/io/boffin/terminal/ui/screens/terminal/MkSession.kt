@@ -194,7 +194,7 @@ object MkSession {
         return PendingCommand(
             shell = shell,
             args = args,
-            workingDir = scriptFile.parentFile?.absolutePath ?: "/sdcard/ProotForge",
+            workingDir = scriptFile.parentFile?.absolutePath ?: "/sdcard/TerminalForge",
             env = null
         )
     }
