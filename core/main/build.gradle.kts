@@ -17,7 +17,7 @@ val gitCommitDate: Provider<String> =
 
 
 android {
-    namespace = "io.boffin.proot"
+    namespace = "io.boffin.terminal"
     android.buildFeatures.buildConfig = true
     compileSdk = 37
 

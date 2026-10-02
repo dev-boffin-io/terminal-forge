@@ -6,8 +6,8 @@ import android.content.SharedPreferences
 import android.os.Build
 import androidx.appcompat.app.AppCompatDelegate
 import com.rk.libcommons.application
-import io.boffin.proot.ui.screens.settings.WorkingMode
-import io.boffin.proot.ui.screens.settings.InputMode
+import io.boffin.terminal.ui.screens.settings.WorkingMode
+import io.boffin.terminal.ui.screens.settings.InputMode
 
 object Settings {
     //Boolean
@@ -28,8 +28,8 @@ object Settings {
         get() = Preference.getString(key = "selected_palette", default = "CATPPUCCIN")
         set(value) = Preference.setString(key = "selected_palette", value)
 
-    var theme_palette: io.boffin.proot.ui.theme.ThemePalette
-        get() = io.boffin.proot.ui.theme.ThemePalette.fromName(selected_palette)
+    var theme_palette: io.boffin.terminal.ui.theme.ThemePalette
+        get() = io.boffin.terminal.ui.theme.ThemePalette.fromName(selected_palette)
         set(value) { selected_palette = value.name }
     var ignore_storage_permission
         get() = Preference.getBoolean(key = "ignore_storage_permission",default = false)
@@ -161,12 +161,12 @@ object Settings {
         get() = Preference.getString(key = "virtual_keys_string", default = default_virtual_keys)
         set(value) = Preference.setString(key = "virtual_keys_string", value)
 
-    fun getShortcutBinding(action: io.boffin.proot.ui.screens.terminal.ShortcutAction): io.boffin.proot.ui.screens.terminal.ShortcutBinding {
+    fun getShortcutBinding(action: io.boffin.terminal.ui.screens.terminal.ShortcutAction): io.boffin.terminal.ui.screens.terminal.ShortcutBinding {
         val raw = Preference.getString(key = action.prefKey, default = action.default.serialize())
-        return io.boffin.proot.ui.screens.terminal.ShortcutBinding.deserialize(raw)
+        return io.boffin.terminal.ui.screens.terminal.ShortcutBinding.deserialize(raw)
     }
 
-    fun setShortcutBinding(action: io.boffin.proot.ui.screens.terminal.ShortcutAction, binding: io.boffin.proot.ui.screens.terminal.ShortcutBinding) {
+    fun setShortcutBinding(action: io.boffin.terminal.ui.screens.terminal.ShortcutAction, binding: io.boffin.terminal.ui.screens.terminal.ShortcutBinding) {
         Preference.setString(key = action.prefKey, value = binding.serialize())
     }
 

@@ -150,7 +150,7 @@
 # Retain generic signatures of TypeToken and its subclasses with R8 version 3.0 and higher.
 -keep,allowobfuscation,allowshrinking class com.google.gson.reflect.TypeToken
 -keep,allowobfuscation,allowshrinking class * extends com.google.gson.reflect.TypeToken
--keep class io.boffin.proot.App { *; }
+-keep class io.boffin.terminal.App { *; }
 # Prevent proguard from stripping interface information from TypeAdapter, TypeAdapterFactory,
 # JsonSerializer, JsonDeserializer instances (so they can be used in @JsonAdapter)
 -keep class * extends com.google.gson.TypeAdapter
@@ -207,21 +207,21 @@
 -keepclasseswithmembernames class com.rk.plugin.server.api.API {*;}
 -keepclasseswithmembernames class com.rk.plugin.server.api.PluginLifeCycle  {*;}
 -keepclasseswithmembernames class com.rk.plugin.server.** {*;}
--keep class io.boffin.proot.MainActivity.MainActivity {*;}
--keepclasseswithmembernames class io.boffin.proot.App {*;}
--keepclasseswithmembernames class io.boffin.proot.BaseActivity {*;}
+-keep class io.boffin.terminal.MainActivity.MainActivity {*;}
+-keepclasseswithmembernames class io.boffin.terminal.App {*;}
+-keepclasseswithmembernames class io.boffin.terminal.BaseActivity {*;}
 
 -keepclassmembernames class com.rk.plugin.server.api.API {*;}
 -keepclassmembernames class com.rk.plugin.server.api.PluginLifeCycle {*;}
 -keepclassmembernames class com.rk.plugin.server.** {*;}
--keepclassmembernames class io.boffin.proot.App {*;}
--keepclassmembernames class io.boffin.proot.BaseActivity {*;}
+-keepclassmembernames class io.boffin.terminal.App {*;}
+-keepclassmembernames class io.boffin.terminal.BaseActivity {*;}
 
 -keepnames class com.rk.plugin.server.api.API {*;}
 -keepnames class com.rk.plugin.server.api.PluginLifeCycle {*;}
 -keepnames class com.rk.plugin.server.** {*;}
--keepnames class io.boffin.proot.App {*;}
--keepnames class io.boffin.proot.BaseActivity {*;}
+-keepnames class io.boffin.terminal.App {*;}
+-keepnames class io.boffin.terminal.BaseActivity {*;}
 
 -dontwarn sun.security.x509.X509Key
 -dontobfuscate

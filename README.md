@@ -1,7 +1,7 @@
-# Proot Forge
-**Proot Forge** is a sleek, Material 3-inspired terminal emulator designed as a modern alternative to the legacy [Jackpal Terminal](https://github.com/jackpal/Android-Terminal-Emulator). Built on [Termux's](https://github.com/termux/termux-app) robust TerminalView
+# Terminal Forge
+**Terminal Forge** is a sleek, Material 3-inspired terminal emulator designed as a modern alternative to the legacy [Jackpal Terminal](https://github.com/jackpal/Android-Terminal-Emulator). Built on [Termux's](https://github.com/termux/termux-app) robust TerminalView
 
-Download the latest APK from the [Releases Section](https://github.com/dev-boffin-io/proot-forge/releases/latest).
+Download the latest APK from the [Releases Section](https://github.com/dev-boffin-io/terminal-forge/releases/latest).
 
 # Features
 - [x] Basic Terminal
@@ -37,5 +37,5 @@ Download the latest APK from the [Releases Section](https://github.com/dev-boffi
 
 ## Community
 > [!TIP]
-Join the Proot Forge community to stay updated and engage with other users:
+Join the Terminal Forge community to stay updated and engage with other users:
 - [Telegram](https://t.me/reTerminal)

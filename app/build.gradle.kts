@@ -87,18 +87,18 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
-            resValue("string","app_name","Proot Forge")
+            resValue("string","app_name","Terminal Forge")
         }
         debug{
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-DEBUG"
-            resValue("string","app_name","Proot Forge-Debug")
+            resValue("string","app_name","Terminal Forge-Debug")
         }
     }
 
     
     defaultConfig {
-        applicationId = "io.boffin.proot"
+        applicationId = "io.boffin.terminal"
         minSdk = 26
         targetSdk = 37
         versionCode = 10

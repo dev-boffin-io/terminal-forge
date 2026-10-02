@@ -33,7 +33,7 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "proot-forge"
+rootProject.name = "terminal-forge"
 include(":app")
 include(":core:main")
 
