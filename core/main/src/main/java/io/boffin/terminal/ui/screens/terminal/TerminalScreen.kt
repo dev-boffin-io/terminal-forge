@@ -41,6 +41,8 @@ import io.boffin.terminal.ui.components.SetStatusBarTextColor
 import io.boffin.terminal.ui.screens.downloader.KaliInstaller
 import io.boffin.terminal.ui.screens.downloader.NetHunterInstaller
 import io.boffin.terminal.ui.screens.downloader.RootfsInstallFlow
+import io.boffin.terminal.ui.screens.downloader.RootfsInstaller
+import io.boffin.terminal.ui.screens.downloader.distroLabel
 import io.boffin.terminal.ui.screens.downloader.downloadDirectRootfs
 import io.boffin.terminal.ui.screens.settings.SettingsCard
 import io.boffin.terminal.ui.screens.settings.WorkingMode
@@ -68,7 +70,7 @@ fun TerminalScreen(
     var installingMode by remember { mutableStateOf<Int?>(null) }
     var installLabel by remember { mutableStateOf("") }
     var installAskExecMode by remember { mutableStateOf(false) }
-    var boffinInstaller by remember { mutableStateOf<(suspend (onProgress: (Int) -> Unit) -> Unit)?>(null) }
+    var boffinInstaller by remember { mutableStateOf<RootfsInstaller?>(null) }
     var showBoffinUrlDialog by remember { mutableStateOf(false) }
 
     val sessionBinder = mainViewModel.sessionBinder
@@ -101,10 +103,11 @@ fun TerminalScreen(
         installingMode = mode
     }
 
-    fun downloaderFor(mode: Int): suspend (onProgress: (Int) -> Unit) -> Unit = when (mode) {
+    fun downloaderFor(mode: Int): RootfsInstaller = when (mode) {
         WorkingMode.ALPINE -> { onProgress -> KaliInstaller.downloadIfNeeded(context, onProgress) }
         WorkingMode.NETHUNTER -> { onProgress -> NetHunterInstaller.downloadIfNeeded(context, onProgress) }
         WorkingMode.BOFFIN -> {
+            // Either the URL the user just typed in, or whatever is already saved.
             val installer = boffinInstaller
                 ?: { onProgress -> downloadDirectRootfs(context, Settings.boffin_url, "boffin.tar.gz", 120_000, 120_000, onProgress) }
             { onProgress -> installer(onProgress) }
@@ -143,7 +146,6 @@ fun TerminalScreen(
 
     if (showAddDialog && sessionBinder != null) {
         AddSessionDialog(
-            isKaliInstalled = Rootfs.isRootfsInstalled(context),
             onDismiss = { showAddDialog = false },
             onCreateSession = { mode ->
                 when (mode) {
@@ -278,12 +280,12 @@ private fun BackgroundImage(viewModel: TerminalViewModel) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AddSessionDialog(
-    isKaliInstalled: Boolean,
     onDismiss: () -> Unit,
     onCreateSession: (Int) -> Unit,
     onCreateCustomSession: (CustomSession) -> Unit
 ) {
     val isArm64 = "arm64-v8a" in Build.SUPPORTED_ABIS
+    val isKaliInstalled = Rootfs.isInstalled.value
     val customSessions = remember { CustomSessions.getAll() }
     BasicAlertDialog(onDismissRequest = onDismiss) {
         PreferenceGroup {
@@ -365,11 +367,4 @@ private fun generateUniqueSessionId(existingIds: List<String>): String {
         index++
     } while (newId in existingIds)
     return newId
-}
-
-private fun distroLabel(mode: Int): String = when (mode) {
-    WorkingMode.ALPINE -> "Kali"
-    WorkingMode.NETHUNTER -> "NetHunter"
-    WorkingMode.BOFFIN -> "Boffin"
-    else -> "Terminal Forge"
 }

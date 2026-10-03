@@ -93,7 +93,6 @@
     <string name="retry">Retry</string>
     <string name="rootfs_downloading">Downloading %1$s rootfs…</string>
     <string name="rootfs_download_failed">Failed to download %1$s rootfs: %2$s</string>
-    <string name="rootfs_install_required">%1$s needs to be installed first</string>
     <string name="rootfs_not_installed_desc">Not installed yet — downloads on first use</string>
     <string name="root_detected_title">Root access detected</string>
     <string name="root_detected_desc">This device appears to be rooted. Kali can run either through proot (userspace, no root needed, works everywhere) or through a real chroot (uses root, generally faster and more compatible). You can change this later in Settings → Execution Mode.</string>

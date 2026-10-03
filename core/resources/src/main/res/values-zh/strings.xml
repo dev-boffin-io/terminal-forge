@@ -70,7 +70,6 @@
     <string name="retry">重试</string>
     <string name="rootfs_downloading">正在下载 %1$s rootfs…</string>
     <string name="rootfs_download_failed">下载 %1$s rootfs 失败：%2$s</string>
-    <string name="rootfs_install_required">需要先安装 %1$s</string>
     <string name="rootfs_not_installed_desc">尚未安装 — 首次使用时下载</string>
     <string name="root_detected_title">检测到 root 权限</string>
     <string name="root_detected_desc">此设备似乎已 root。Kali 可以通过 proot（用户态，无需 root，处处可用）运行，也可以通过真正的 chroot 运行（需要 root，通常更快且兼容性更好）。之后可以在 设置 → Execution Mode 中更改。</string>

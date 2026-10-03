@@ -27,6 +27,9 @@ import com.rk.settings.Settings
 import io.boffin.terminal.ui.activities.terminal.MainActivity
 import io.boffin.terminal.ui.components.SettingsToggle
 import io.boffin.terminal.ui.routes.MainActivityRoutes
+import io.boffin.terminal.ui.screens.downloader.KaliInstaller
+import io.boffin.terminal.ui.screens.downloader.RootfsInstallFlow
+import io.boffin.terminal.ui.screens.downloader.distroLabel
 import io.boffin.terminal.ui.screens.terminal.CustomSessions
 import io.boffin.terminal.ui.screens.terminal.ExecMode
 import io.boffin.terminal.ui.screens.terminal.Rootfs
@@ -94,6 +97,15 @@ fun Settings(
     var showAddCustomSession by remember { mutableStateOf(false) }
     var defaultIsCustom by remember { mutableStateOf(Settings.default_is_custom) }
     var defaultCustomId by remember { mutableStateOf(CustomSessions.getDefaultId()) }
+    var installingKali by remember { mutableStateOf(false) }
+    val isKaliInstalled = Rootfs.isInstalled.value
+
+    fun saveWorkingMode(mode: Int) {
+        defaultIsCustom = false
+        Settings.default_is_custom = false
+        selectedWorkingMode = mode
+        Settings.working_Mode = mode
+    }
 
     PreferenceLayout(
         label = stringResource(strings.settings),
@@ -103,23 +115,24 @@ fun Settings(
         PreferenceGroup(heading = stringResource(strings.default_working_mode)) {
             WorkingModeOption(
                 title = "Kali",
-                description = stringResource(strings.alpine_desc),
+                description = stringResource(strings.alpine_desc) +
+                    if (isKaliInstalled) "" else "\n" + stringResource(strings.rootfs_not_installed_desc),
                 selected = !defaultIsCustom && selectedWorkingMode == WorkingMode.ALPINE
             ) {
-                defaultIsCustom = false
-                Settings.default_is_custom = false
-                selectedWorkingMode = WorkingMode.ALPINE
-                Settings.working_Mode = WorkingMode.ALPINE
+                // Don't leave the default pointing at a rootfs that isn't there: install first, and
+                // only persist the choice once it succeeded (or the user backs out of the dialog).
+                if (isKaliInstalled) {
+                    saveWorkingMode(WorkingMode.ALPINE)
+                } else {
+                    installingKali = true
+                }
             }
             WorkingModeOption(
                 title = "Android",
                 description = stringResource(strings.android_desc),
                 selected = !defaultIsCustom && selectedWorkingMode == WorkingMode.ANDROID
             ) {
-                defaultIsCustom = false
-                Settings.default_is_custom = false
-                selectedWorkingMode = WorkingMode.ANDROID
-                Settings.working_Mode = WorkingMode.ANDROID
+                saveWorkingMode(WorkingMode.ANDROID)
             }
             customSessions.forEach { session ->
                 WorkingModeOption(
@@ -246,6 +259,20 @@ fun Settings(
                 }
                 showAddCustomSession = false
             }
+        )
+    }
+
+    if (installingKali) {
+        RootfsInstallFlow(
+            label = distroLabel(WorkingMode.ALPINE),
+            install = { onProgress -> KaliInstaller.downloadIfNeeded(context, onProgress) },
+            askExecMode = true,
+            onReady = {
+                installingKali = false
+                Rootfs.checkInstallation(context)
+                saveWorkingMode(WorkingMode.ALPINE)
+            },
+            onDismiss = { installingKali = false }
         )
     }
 }

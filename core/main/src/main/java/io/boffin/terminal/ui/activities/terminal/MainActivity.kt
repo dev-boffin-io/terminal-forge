@@ -28,8 +28,13 @@ import com.rk.libcommons.child
 import com.rk.libcommons.localDir
 import io.boffin.terminal.ui.navHosts.MainActivityNavHost
 import io.boffin.terminal.ui.routes.MainActivityRoutes
+import io.boffin.terminal.ui.screens.downloader.KaliInstaller
+import io.boffin.terminal.ui.screens.downloader.RootfsInstallFlow
+import io.boffin.terminal.ui.screens.downloader.distroLabel
+import io.boffin.terminal.ui.screens.settings.WorkingMode
 import io.boffin.terminal.ui.screens.terminal.CustomSession
 import io.boffin.terminal.ui.screens.terminal.MkSession
+import io.boffin.terminal.ui.screens.terminal.Rootfs
 import io.boffin.terminal.ui.screens.terminal.RunScriptDialog
 import io.boffin.terminal.ui.screens.terminal.TerminalBackEnd
 import io.boffin.terminal.ui.screens.terminal.TerminalViewModel
@@ -48,6 +53,7 @@ class MainActivity : ComponentActivity() {
     private var isKeyboardVisible = false
     private var wasKeyboardOpen = false
     private var pendingScript by mutableStateOf<File?>(null)
+    private var installingScriptMode by mutableStateOf<Int?>(null)
 
     private val requestNotificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
@@ -99,10 +105,29 @@ class MainActivity : ComponentActivity() {
                     }
 
                     pendingScript?.let { script ->
-                        RunScriptDialog(
-                            scriptName = script.name,
-                            onDismiss = { pendingScript = null },
-                            onRun = { mode, custom -> runScript(script, mode, custom) }
+                        if (installingScriptMode == null) {
+                            RunScriptDialog(
+                                scriptName = script.name,
+                                onDismiss = { pendingScript = null },
+                                onRun = { mode, custom -> runScript(script, mode, custom) }
+                            )
+                        }
+                    }
+
+                    installingScriptMode?.let { mode ->
+                        RootfsInstallFlow(
+                            label = distroLabel(mode),
+                            install = { onProgress -> KaliInstaller.downloadIfNeeded(this@MainActivity, onProgress) },
+                            askExecMode = true,
+                            onReady = {
+                                installingScriptMode = null
+                                Rootfs.checkInstallation(this@MainActivity)
+                                pendingScript?.let { script -> launchScript(script, mode, null) }
+                            },
+                            onDismiss = {
+                                installingScriptMode = null
+                                pendingScript = null
+                            }
                         )
                     }
                 }
@@ -219,6 +244,19 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun runScript(script: File, mode: Int, custom: CustomSession?) {
+        // Kali is offered as a script target on installs that never set it up, so hold the script
+        // until its rootfs is there instead of running it into a distro that cannot start.
+        if (custom == null && mode == WorkingMode.ALPINE && !Rootfs.isRootfsInstalled(this)) {
+            pendingScript = script
+            installingScriptMode = mode
+            return
+        }
+        // Any other distro target that was never installed degrades to the Android shell rather
+        // than running init-host against a missing archive.
+        launchScript(script, if (custom == null) Rootfs.resolveUsableMode(this, mode) else mode, custom)
+    }
+
+    private fun launchScript(script: File, mode: Int, custom: CustomSession?) {
         val binder = viewModel.sessionBinder ?: return
         val terminal = terminalViewModel.terminalView ?: return
         val client = TerminalBackEnd(terminal, this)
@@ -227,6 +265,7 @@ class MainActivity : ComponentActivity() {
         binder.createSession(id, client, mode, pendingCommand)
         terminalViewModel.changeSession(this, binder, id)
         pendingScript = null
+        installingScriptMode = null
     }
 
     private fun generateUniqueScriptSessionId(existingIds: List<String>): String {

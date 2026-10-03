@@ -27,12 +27,24 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.rk.resources.strings
+import io.boffin.terminal.ui.screens.settings.WorkingMode
 import io.boffin.terminal.ui.screens.terminal.ExecMode
 import io.boffin.terminal.ui.screens.terminal.Rootfs
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+
+/** Blocking download work, run off the main thread by [RootfsDownloadDialog]. */
+typealias RootfsInstaller = (onProgress: (Int) -> Unit) -> Unit
+
+/** User-facing distro name for a working mode, used in install dialogs. */
+fun distroLabel(mode: Int): String = when (mode) {
+    WorkingMode.ALPINE -> "Kali"
+    WorkingMode.NETHUNTER -> "NetHunter"
+    WorkingMode.BOFFIN -> "Boffin"
+    else -> "Terminal Forge"
+}
 
 /**
  * True if `su` is present and actually grants uid=0. Never call this from the main thread: `su -c id`
@@ -57,14 +69,14 @@ fun hasRootAccess(): Boolean {
  * Shared by the Kali, NetHunter and Boffin install paths so all three behave identically and a
  * failed download can be retried in place, leaving the caller free to stay on the Android shell.
  *
- * @param install the download work; re-invoked on retry
+ * @param install blocking download work, run on IO and re-invoked on retry
  * @param onSuccess called once the archive is on disk
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RootfsDownloadDialog(
     label: String,
-    install: suspend (onProgress: (Int) -> Unit) -> Unit,
+    install: RootfsInstaller,
     onSuccess: () -> Unit,
     onDismiss: () -> Unit
 ) {
@@ -77,7 +89,9 @@ fun RootfsDownloadDialog(
         progress = 0
         scope.launch {
             try {
-                install { pct -> progress = pct }
+                // The installers are plain blocking HTTP work; keep them off the main thread or a
+                // slow connection stalls the UI (and trips the ANR watchdog).
+                withContext(Dispatchers.IO) { install { pct -> progress = pct } }
                 onSuccess()
             } catch (e: Exception) {
                 error = e.message ?: e.javaClass.simpleName
@@ -180,7 +194,7 @@ fun ExecModeChoiceDialog(onChosen: () -> Unit) {
 @Composable
 fun RootfsInstallFlow(
     label: String,
-    install: suspend (onProgress: (Int) -> Unit) -> Unit,
+    install: RootfsInstaller,
     askExecMode: Boolean,
     onReady: () -> Unit,
     onDismiss: () -> Unit
