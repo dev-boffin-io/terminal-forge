@@ -38,7 +38,9 @@ import com.rk.settings.Settings
 import io.boffin.terminal.ui.activities.terminal.MainActivity
 import io.boffin.terminal.ui.activities.terminal.MainViewModel
 import io.boffin.terminal.ui.components.SetStatusBarTextColor
+import io.boffin.terminal.ui.screens.downloader.KaliInstaller
 import io.boffin.terminal.ui.screens.downloader.NetHunterInstaller
+import io.boffin.terminal.ui.screens.downloader.RootfsInstallFlow
 import io.boffin.terminal.ui.screens.downloader.downloadDirectRootfs
 import io.boffin.terminal.ui.screens.settings.SettingsCard
 import io.boffin.terminal.ui.screens.settings.WorkingMode
@@ -63,9 +65,11 @@ fun TerminalScreen(
     val configuration = LocalConfiguration.current
     val drawerWidth = (configuration.screenWidthDp * 0.84).dp
     var showAddDialog by remember { mutableStateOf(false) }
-    var downloadingMode by remember { mutableStateOf<Int?>(null) }
-    var downloadProgress by remember { mutableIntStateOf(0) }
-    var downloadError by remember { mutableStateOf<String?>(null) }
+    var installingMode by remember { mutableStateOf<Int?>(null) }
+    var installLabel by remember { mutableStateOf("") }
+    var installAskExecMode by remember { mutableStateOf(false) }
+    var boffinInstaller by remember { mutableStateOf<(suspend (onProgress: (Int) -> Unit) -> Unit)?>(null) }
+    var showBoffinUrlDialog by remember { mutableStateOf(false) }
 
     val sessionBinder = mainViewModel.sessionBinder
 
@@ -79,7 +83,34 @@ fun TerminalScreen(
         showAddDialog = false
     }
 
-    var showBoffinUrlDialog by remember { mutableStateOf(false) }
+    /**
+     * Puts [mode] through its on-demand install flow (download, then for Kali the chroot-vs-proot
+     * question) and only creates the session once the rootfs is actually usable. Distros whose
+     * rootfs is already present skip straight to the session, so existing installs are unaffected.
+     */
+    fun startInstallAndCreateSession(mode: Int, label: String) {
+        val alreadyInstalled = Rootfs.isModeInstalled(context, mode)
+        if (alreadyInstalled) {
+            proceedToCreateSession(mode)
+            return
+        }
+        showAddDialog = false
+        installLabel = label
+        installAskExecMode = mode == WorkingMode.ALPINE
+        boffinInstaller = null
+        installingMode = mode
+    }
+
+    fun downloaderFor(mode: Int): suspend (onProgress: (Int) -> Unit) -> Unit = when (mode) {
+        WorkingMode.ALPINE -> { onProgress -> KaliInstaller.downloadIfNeeded(context, onProgress) }
+        WorkingMode.NETHUNTER -> { onProgress -> NetHunterInstaller.downloadIfNeeded(context, onProgress) }
+        WorkingMode.BOFFIN -> {
+            val installer = boffinInstaller
+                ?: { onProgress -> downloadDirectRootfs(context, Settings.boffin_url, "boffin.tar.gz", 120_000, 120_000, onProgress) }
+            { onProgress -> installer(onProgress) }
+        }
+        else -> { _ -> }
+    }
 
     LaunchedEffect(isDarkActive) {
         withContext(Dispatchers.IO) {
@@ -112,6 +143,7 @@ fun TerminalScreen(
 
     if (showAddDialog && sessionBinder != null) {
         AddSessionDialog(
+            isKaliInstalled = Rootfs.isRootfsInstalled(context),
             onDismiss = { showAddDialog = false },
             onCreateSession = { mode ->
                 when (mode) {
@@ -123,33 +155,8 @@ fun TerminalScreen(
                             showBoffinUrlDialog = true
                         }
                     }
-                    WorkingMode.NETHUNTER -> {
-                        if (Rootfs.isNetHunterRootfsInstalled(context)) {
-                            proceedToCreateSession(mode)
-                        } else {
-                            showAddDialog = false
-                            downloadingMode = mode
-                            downloadError = null
-                            downloadProgress = 0
-                            scope.launch {
-                                withContext(Dispatchers.IO) {
-                                    try {
-                                        NetHunterInstaller.downloadIfNeeded(context) { pct ->
-                                            downloadProgress = pct
-                                        }
-                                        withContext(Dispatchers.Main) {
-                                            downloadingMode = null
-                                            proceedToCreateSession(mode)
-                                        }
-                                    } catch (e: Exception) {
-                                        withContext(Dispatchers.Main) {
-                                            downloadError = e.message ?: e.javaClass.simpleName
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    WorkingMode.ALPINE, WorkingMode.NETHUNTER ->
+                        startInstallAndCreateSession(mode, distroLabel(mode))
                     else -> proceedToCreateSession(mode)
                 }
             },
@@ -164,17 +171,17 @@ fun TerminalScreen(
         )
     }
 
-    if (downloadingMode != null) {
-        val label = if (downloadingMode == WorkingMode.NETHUNTER) "NetHunter" else "Boffin"
-        RootfsDownloadDialog(
-            label = label,
-            verb = "Downloading",
-            progress = downloadProgress,
-            error = downloadError,
-            onDismiss = {
-                downloadingMode = null
-                downloadError = null
-            }
+    installingMode?.let { mode ->
+        RootfsInstallFlow(
+            label = installLabel,
+            install = downloaderFor(mode),
+            askExecMode = installAskExecMode,
+            onReady = {
+                installingMode = null
+                Rootfs.checkInstallation(context)
+                proceedToCreateSession(mode)
+            },
+            onDismiss = { installingMode = null }
         )
     }
 
@@ -185,32 +192,12 @@ fun TerminalScreen(
             onConfirm = { url ->
                 showBoffinUrlDialog = false
                 Settings.boffin_url = url
-                downloadingMode = WorkingMode.BOFFIN
-                downloadError = null
-                downloadProgress = 0
-                scope.launch {
-                    withContext(Dispatchers.IO) {
-                        try {
-                            downloadDirectRootfs(
-                                context = context,
-                                url = url,
-                                outputFileName = "boffin.tar.gz",
-                                connectTimeoutMs = 120_000,
-                                readTimeoutMs = 120_000
-                            ) { pct ->
-                                downloadProgress = pct
-                            }
-                            withContext(Dispatchers.Main) {
-                                downloadingMode = null
-                                proceedToCreateSession(WorkingMode.BOFFIN)
-                            }
-                        } catch (e: Exception) {
-                            withContext(Dispatchers.Main) {
-                                downloadError = e.message ?: e.javaClass.simpleName
-                            }
-                        }
-                    }
+                installLabel = distroLabel(WorkingMode.BOFFIN)
+                installAskExecMode = false
+                boffinInstaller = { onProgress ->
+                    downloadDirectRootfs(context, url, "boffin.tar.gz", 120_000, 120_000, onProgress)
                 }
+                installingMode = WorkingMode.BOFFIN
             }
         )
     }
@@ -291,6 +278,7 @@ private fun BackgroundImage(viewModel: TerminalViewModel) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AddSessionDialog(
+    isKaliInstalled: Boolean,
     onDismiss: () -> Unit,
     onCreateSession: (Int) -> Unit,
     onCreateCustomSession: (CustomSession) -> Unit
@@ -301,7 +289,12 @@ private fun AddSessionDialog(
         PreferenceGroup {
             SettingsCard(
                 title = { Text("Kali") },
-                description = { Text(stringResource(strings.alpine_desc)) },
+                description = {
+                    Text(
+                        stringResource(strings.alpine_desc) +
+                            if (isKaliInstalled) "" else "\n" + stringResource(strings.rootfs_not_installed_desc)
+                    )
+                },
                 onClick = { onCreateSession(WorkingMode.ALPINE) }
             )
             SettingsCard(
@@ -327,36 +320,6 @@ private fun AddSessionDialog(
                     description = { Text(session.shellPath) },
                     onClick = { onCreateCustomSession(session) }
                 )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun RootfsDownloadDialog(label: String, verb: String, progress: Int, error: String?, onDismiss: () -> Unit) {
-    BasicAlertDialog(onDismissRequest = { if (error != null) onDismiss() }) {
-        Surface(shape = MaterialTheme.shapes.large) {
-            Column(
-                modifier = Modifier.padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                if (error != null) {
-                    val action = if (verb == "Copying") "copy" else "download"
-                    Text("Failed to $action $label rootfs: $error", color = MaterialTheme.colorScheme.error)
-                    Spacer(modifier = Modifier.height(12.dp))
-                    TextButton(onClick = onDismiss) { Text("Close") }
-                } else {
-                    Text("$verb $label rootfs\u2026")
-                    Spacer(modifier = Modifier.height(16.dp))
-                    if (progress > 0) {
-                        CircularProgressIndicator(progress = { progress / 100f })
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("$progress%")
-                    } else {
-                        CircularProgressIndicator()
-                    }
-                }
             }
         }
     }
@@ -402,4 +365,11 @@ private fun generateUniqueSessionId(existingIds: List<String>): String {
         index++
     } while (newId in existingIds)
     return newId
+}
+
+private fun distroLabel(mode: Int): String = when (mode) {
+    WorkingMode.ALPINE -> "Kali"
+    WorkingMode.NETHUNTER -> "NetHunter"
+    WorkingMode.BOFFIN -> "Boffin"
+    else -> "Terminal Forge"
 }

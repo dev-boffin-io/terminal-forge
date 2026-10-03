@@ -1,6 +1,7 @@
 package io.boffin.terminal.ui.screens.downloader
 
 import android.content.Context
+import android.os.Build
 import com.rk.libcommons.child
 import org.json.JSONObject
 import java.io.File
@@ -132,6 +133,48 @@ object NetHunterInstaller {
             connectTimeoutMs = 15_000,
             readTimeoutMs = 15_000,
             label = "NetHunter",
+            onProgress = onProgress
+        )
+    }
+}
+
+// Base URL where the kali-<arch>.tar.gz.rootfs assets are published as GitHub Release
+// files. Update the tag if you publish the rootfs files under a different release.
+private const val KALI_RELEASE_BASE_URL =
+    "https://github.com/dev-boffin-io/terminal-forge/releases/download/rootfs-v1"
+
+/**
+ * Kali Linux session (WorkingMode.ALPINE - the historical internal name). No longer downloaded
+ * at app start: the Android shell is the landing screen and Kali is an on-demand install the
+ * user triggers from "+" or Settings. Output filename and extraction dir are unchanged
+ * (filesDir/alpine.tar.gz, local/alpine) so installs that already have Kali work exactly as
+ * before and are never re-downloaded.
+ */
+object KaliInstaller {
+    fun downloadIfNeeded(context: Context, onProgress: (Int) -> Unit) {
+        val outputFile = context.filesDir.child("alpine.tar.gz")
+        if (outputFile.exists() && outputFile.length() > 0L) {
+            return
+        }
+
+        val abis = Build.SUPPORTED_ABIS
+        val abi = abis.firstOrNull {
+            it in listOf("arm64-v8a", "armeabi-v7a", "x86_64")
+        } ?: throw InstallException("Unsupported CPU architectures: ${abis.joinToString()}")
+
+        val debianArch = when (abi) {
+            "arm64-v8a" -> "aarch64"
+            "armeabi-v7a" -> "armhf"
+            "x86_64" -> "x86_64"
+            else -> throw InstallException("Unsupported ABI: $abi")
+        }
+
+        downloadUrlToFile(
+            url = "$KALI_RELEASE_BASE_URL/kali-$debianArch.tar.gz.rootfs",
+            outputFile = outputFile,
+            connectTimeoutMs = 15_000,
+            readTimeoutMs = 15_000,
+            label = "Kali",
             onProgress = onProgress
         )
     }

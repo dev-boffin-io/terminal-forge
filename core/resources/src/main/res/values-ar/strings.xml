@@ -26,4 +26,14 @@
     <string name="input_mode_type_null_desc">صحيح دلاليًا ولكن قد يتعطل بعض أساليب الإدخال</string>
     <string name="input_mode_visible_password">وضع التوافق القديم</string>
     <string name="input_mode_visible_password_desc">يصلح مشكلة صدى لوحة مفاتيح سامسونج؛ قد يعطل إدخال CJK في Gboard</string>
+    <string name="close">إغلاق</string>
+    <string name="retry">إعادة المحاولة</string>
+    <string name="rootfs_downloading">جارٍ تنزيل نظام ملفات جذر %1$s…</string>
+    <string name="rootfs_download_failed">فشل تنزيل نظام ملفات جذر %1$s: %2$s</string>
+    <string name="rootfs_install_required">يجب تثبيت %1$s أولاً</string>
+    <string name="rootfs_not_installed_desc">غير مثبت بعد — يُنزَّل عند الاستخدام الأول</string>
+    <string name="root_detected_title">تم اكتشاف وصول root</string>
+    <string name="root_detected_desc">يبدو أن هذا الجهاز مُ.Root. يمكن تشغيل Kali عبر proot (في مساحة المستخدم، بدون root، ويعمل في كل مكان) أو عبر chroot حقيقي (يستخدم root، عادةً أسرع وأكثر توافقاً). يمكنك تغيير ذلك لاحقاً في الإعدادات ← وضع التنفيذ.</string>
+    <string name="use_chroot">استخدام chroot (root)</string>
+    <string name="use_proot">استخدام proot</string>
 </resources>

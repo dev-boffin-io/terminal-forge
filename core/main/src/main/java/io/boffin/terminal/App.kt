@@ -7,6 +7,7 @@ import android.os.StrictMode
 import com.github.anrwatchdog.ANRWatchDog
 import com.rk.libcommons.application
 import com.rk.resources.Res
+import io.boffin.terminal.ui.screens.terminal.Rootfs
 import io.boffin.terminal.ui.screens.terminal.TerminalUtils
 import com.rk.update.UpdateManager
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -44,6 +45,8 @@ class App : Application() {
         }
 
         ANRWatchDog().start()
+
+        Rootfs.checkInstallation(this)
 
         UpdateManager(this).onUpdate()
 
