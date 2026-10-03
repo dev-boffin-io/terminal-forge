@@ -71,7 +71,7 @@ fun RunScriptDialog(
                 ) { select(WorkingMode.ANDROID, null, false) }
                 ScriptSessionOption(
                     title = "NetHunter",
-                    description = "Kali NetHunter (full, arm64 only)",
+                    description = "NetHunter (full, arm64 only)",
                     selected = !selectedIsCustom && selectedMode == WorkingMode.NETHUNTER
                 ) { select(WorkingMode.NETHUNTER, null, false) }
                 ScriptSessionOption(

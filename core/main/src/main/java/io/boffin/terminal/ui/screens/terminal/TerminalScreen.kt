@@ -307,7 +307,7 @@ private fun AddSessionDialog(
             if (isArm64) {
                 SettingsCard(
                     title = { Text("NetHunter") },
-                    description = { Text("Kali NetHunter (full, arm64 only)") },
+                    description = { Text("NetHunter (full, arm64 only)") },
                     onClick = { onCreateSession(WorkingMode.NETHUNTER) }
                 )
             }

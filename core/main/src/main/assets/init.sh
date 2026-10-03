@@ -23,24 +23,28 @@ if [ "$#" -eq 0 ]; then
     # One-time provisioning so a freshly extracted rootfs has a working shell plus the usual
     # tools. Try apk (Alpine) first, fallback to apt-get (Debian-based).
     if [ ! -f /etc/terminalforge_provisioned ]; then
-        if command -v apk >/dev/null 2>&1; then
-            echo "Terminal Forge: first boot setup - apk update and install"
-            if apk update && apk add --no-cache bash curl git; then
-                touch /etc/terminalforge_provisioned
-                echo "Terminal Forge: first boot setup finished"
+        if [ "${DISTRO_DIR:-alpine}" = "alpine" ]; then
+            if command -v apk >/dev/null 2>&1; then
+                echo "Terminal Forge: first boot setup - apk update and install"
+                if apk update && apk add --no-cache bash curl git; then
+                    touch /etc/terminalforge_provisioned
+                    echo "Terminal Forge: first boot setup finished"
+                else
+                    echo "Terminal Forge: first boot setup failed, will retry next session"
+                fi
+            elif command -v apt-get >/dev/null 2>&1; then
+                echo "Terminal Forge: first boot setup - apt update, apt upgrade, installing bash curl git"
+                if DEBIAN_FRONTEND=noninteractive apt-get update \
+                    && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
+                    && DEBIAN_FRONTEND=noninteractive apt-get install -y bash curl git; then
+                    sed -i '/^root:/s|/bin/sh$|/bin/bash|' /etc/passwd
+                    touch /etc/terminalforge_provisioned
+                    echo "Terminal Forge: first boot setup finished"
+                else
+                    echo "Terminal Forge: first boot setup failed, will retry next session"
+                fi
             else
-                echo "Terminal Forge: first boot setup failed, will retry next session"
-            fi
-        elif command -v apt-get >/dev/null 2>&1; then
-            echo "Terminal Forge: first boot setup - apt update, apt upgrade, installing bash curl git"
-            if DEBIAN_FRONTEND=noninteractive apt-get update \
-                && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
-                && DEBIAN_FRONTEND=noninteractive apt-get install -y bash curl git; then
-                sed -i '/^root:/s|/bin/sh$|/bin/bash|' /etc/passwd
                 touch /etc/terminalforge_provisioned
-                echo "Terminal Forge: first boot setup finished"
-            else
-                echo "Terminal Forge: first boot setup failed, will retry next session"
             fi
         else
             touch /etc/terminalforge_provisioned
