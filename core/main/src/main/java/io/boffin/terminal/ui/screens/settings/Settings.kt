@@ -82,6 +82,18 @@ object InputMode {
     const val VISIBLE_PASSWORD = 2
 }
 
+/**
+ * Interactive shell a distro session drops into. Values are persisted in Settings.login_shell and
+ * handed to init.sh as RETERM_LOGIN_SHELL, so don't renumber them.
+ */
+object LoginShell {
+    /** Keep whatever the distro itself uses as root's shell (bash on our Debian-based Kali). */
+    const val DISTRO = 0
+    const val BASH = 1
+    const val SH = 2
+    const val ASH = 3
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Settings(
@@ -93,6 +105,7 @@ fun Settings(
     var selectedWorkingMode by remember { mutableIntStateOf(Settings.working_Mode) }
     var selectedInputMode by remember { mutableIntStateOf(Settings.input_mode) }
     var selectedExecMode by remember { mutableStateOf(Rootfs.execMode.value) }
+    var selectedLoginShell by remember { mutableIntStateOf(Settings.login_shell) }
     var customSessions by remember { mutableStateOf(CustomSessions.getAll()) }
     var showAddCustomSession by remember { mutableStateOf(false) }
     var defaultIsCustom by remember { mutableStateOf(Settings.default_is_custom) }
@@ -156,6 +169,45 @@ fun Settings(
             ExecModeOption("Proot", "No root required, slightly slower", ExecMode.PROOT, selectedExecMode) {
                 selectedExecMode = it
                 Rootfs.setExecMode(it)
+            }
+        }
+
+        PreferenceGroup(heading = stringResource(strings.login_shell)) {
+            LoginShellOption(
+                title = stringResource(strings.login_shell_distro),
+                description = stringResource(strings.login_shell_distro_desc),
+                mode = LoginShell.DISTRO,
+                currentMode = selectedLoginShell
+            ) {
+                selectedLoginShell = it
+                Settings.login_shell = it
+            }
+            LoginShellOption(
+                title = stringResource(strings.login_shell_bash),
+                description = stringResource(strings.login_shell_bash_desc),
+                mode = LoginShell.BASH,
+                currentMode = selectedLoginShell
+            ) {
+                selectedLoginShell = it
+                Settings.login_shell = it
+            }
+            LoginShellOption(
+                title = stringResource(strings.login_shell_sh),
+                description = stringResource(strings.login_shell_sh_desc),
+                mode = LoginShell.SH,
+                currentMode = selectedLoginShell
+            ) {
+                selectedLoginShell = it
+                Settings.login_shell = it
+            }
+            LoginShellOption(
+                title = stringResource(strings.login_shell_ash),
+                description = stringResource(strings.login_shell_ash_desc),
+                mode = LoginShell.ASH,
+                currentMode = selectedLoginShell
+            ) {
+                selectedLoginShell = it
+                Settings.login_shell = it
             }
         }
 
@@ -311,6 +363,22 @@ private fun InputModeOption(title: String, description: String, mode: Int, curre
 
 @Composable
 private fun ExecModeOption(title: String, description: String, mode: ExecMode, currentMode: ExecMode?, onSelect: (ExecMode) -> Unit) {
+    SettingsCard(
+        title = { Text(title) },
+        description = { Text(description) },
+        startWidget = {
+            RadioButton(
+                modifier = Modifier.padding(start = 8.dp),
+                selected = currentMode == mode,
+                onClick = { onSelect(mode) }
+            )
+        },
+        onClick = { onSelect(mode) }
+    )
+}
+
+@Composable
+private fun LoginShellOption(title: String, description: String, mode: Int, currentMode: Int, onSelect: (Int) -> Unit) {
     SettingsCard(
         title = { Text(title) },
         description = { Text(description) },

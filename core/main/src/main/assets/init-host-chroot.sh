@@ -77,5 +77,7 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-$SU -c "'$CHROOT' '$ALPINE_DIR' /usr/bin/env -i HOME=/root PATH=/bin:/sbin:/usr/bin:/usr/sbin sh '$PREFIX/local/bin/init' $*"
+# env -i wipes the environment, so RETERM_LOGIN_SHELL has to be passed through explicitly for
+# init.sh to see the user's chosen login shell inside the chroot.
+$SU -c "'$CHROOT' '$ALPINE_DIR' /usr/bin/env -i HOME=/root PATH=/bin:/sbin:/usr/bin:/usr/sbin RETERM_LOGIN_SHELL=${RETERM_LOGIN_SHELL:-0} sh '$PREFIX/local/bin/init' $*"
 cleanup

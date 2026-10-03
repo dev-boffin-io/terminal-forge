@@ -13,6 +13,7 @@ import com.rk.libcommons.nethunterHomeDir
 import io.boffin.terminal.App.Companion.getTempDir
 import io.boffin.terminal.BuildConfig
 import io.boffin.terminal.ui.screens.settings.WorkingMode
+import com.rk.settings.Settings
 import com.termux.terminal.TerminalEmulator
 import com.termux.terminal.TerminalSession
 import com.termux.terminal.TerminalSessionClient
@@ -105,6 +106,8 @@ object MkSession {
                 "PROOT=${applicationInfo.nativeLibraryDir}/libproot.so",
                 "CHROOT=${if (File("/system/bin/chroot").exists()) "/system/bin/chroot" else "/system/xbin/chroot"}",
                 "USE_CHROOT=${if (useChroot) "1" else "0"}",
+                // Consumed by init.sh, which picks the interactive shell for distro sessions.
+                "RETERM_LOGIN_SHELL=${Settings.login_shell}",
                 "DISTRO_DIR=${when (workingMode) {
                     WorkingMode.NETHUNTER -> "nethunter"
                     WorkingMode.BOFFIN -> "boffin"
