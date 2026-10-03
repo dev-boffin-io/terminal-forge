@@ -18,7 +18,7 @@ enum class ExecMode(val value: Int) {
 }
 
 object Rootfs {
-    /** True once the Kali rootfs (WorkingMode.ALPINE) is present. Init'ed by checkInstallation(). */
+    /** True once the Alpine rootfs (WorkingMode.ALPINE) is present. Init'ed by checkInstallation(). */
     var isInstalled = mutableStateOf(false)
     var isNetHunterInstalled = mutableStateOf(false)
     var isBoffinInstalled = mutableStateOf(false)
@@ -64,7 +64,7 @@ object Rootfs {
     }
 
     /**
-     * Single choke point for "which mode can actually be launched right now". Kali/NetHunter/Boffin
+     * Single choke point for "which mode can actually be launched right now". Alpine/NetHunter/Boffin
      * all start via init-host, which unconditionally runs `tar -xf` on the distro archive - with no
      * archive present that just dies at the shell prompt. Since the distro rootfses are now
      * on-demand installs, a saved default (or a pending script target) can legitimately point at a

@@ -28,7 +28,7 @@ import com.rk.libcommons.child
 import com.rk.libcommons.localDir
 import io.boffin.terminal.ui.navHosts.MainActivityNavHost
 import io.boffin.terminal.ui.routes.MainActivityRoutes
-import io.boffin.terminal.ui.screens.downloader.KaliInstaller
+import io.boffin.terminal.ui.screens.downloader.AlpineInstaller
 import io.boffin.terminal.ui.screens.downloader.RootfsInstallFlow
 import io.boffin.terminal.ui.screens.downloader.distroLabel
 import io.boffin.terminal.ui.screens.settings.WorkingMode
@@ -117,7 +117,7 @@ class MainActivity : ComponentActivity() {
                     installingScriptMode?.let { mode ->
                         RootfsInstallFlow(
                             label = distroLabel(mode),
-                            install = { onProgress -> KaliInstaller.downloadIfNeeded(this@MainActivity, onProgress) },
+                            install = { onProgress -> AlpineInstaller.downloadIfNeeded(this@MainActivity, onProgress) },
                             askExecMode = true,
                             onReady = {
                                 installingScriptMode = null
@@ -244,7 +244,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun runScript(script: File, mode: Int, custom: CustomSession?) {
-        // Kali is offered as a script target on installs that never set it up, so hold the script
+        // Alpine is offered as a script target on installs that never set it up, so hold the script
         // until its rootfs is there instead of running it into a distro that cannot start.
         if (custom == null && mode == WorkingMode.ALPINE && !Rootfs.isRootfsInstalled(this)) {
             pendingScript = script

@@ -60,7 +60,7 @@ fun RunScriptDialog(
                 )
                 Spacer(Modifier.height(8.dp))
                 ScriptSessionOption(
-                    title = "Kali",
+                    title = "Alpine",
                     description = stringResource(strings.alpine_desc),
                     selected = !selectedIsCustom && selectedMode == WorkingMode.ALPINE
                 ) { select(WorkingMode.ALPINE, null, false) }

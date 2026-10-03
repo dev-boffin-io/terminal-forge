@@ -32,16 +32,16 @@
     <string name="rootfs_download_failed">فشل تنزيل نظام ملفات جذر %1$s: %2$s</string>
     <string name="rootfs_not_installed_desc">غير مثبت بعد — يُنزَّل عند الاستخدام الأول</string>
     <string name="root_detected_title">تم اكتشاف وصول root</string>
-    <string name="root_detected_desc">يبدو أن هذا الجهاز مُ.Root. يمكن تشغيل Kali عبر proot (في مساحة المستخدم، بدون root، ويعمل في كل مكان) أو عبر chroot حقيقي (يستخدم root، عادةً أسرع وأكثر توافقاً). يمكنك تغيير ذلك لاحقاً في الإعدادات ← وضع التنفيذ.</string>
+    <string name="root_detected_desc">يبدو أن هذا الجهاز مُ.Root. يمكن تشغيل Alpine عبر proot (في مساحة المستخدم، بدون root، ويعمل في كل مكان) أو عبر chroot حقيقي (يستخدم root، عادةً أسرع وأكثر توافقاً). يمكنك تغيير ذلك لاحقاً في الإعدادات ← وضع التنفيذ.</string>
     <string name="use_chroot">استخدام chroot (root)</string>
     <string name="use_proot">استخدام proot</string>
     <string name="login_shell">صدفة تسجيل الدخول</string>
     <string name="login_shell_distro">الافتراضية للتوزيعة</string>
-    <string name="login_shell_distro_desc">ما تستخدمه التوزيعة لحساب root (bash في Kali لدينا)</string>
+    <string name="login_shell_distro_desc">ما تستخدمه التوزيعة لحساب root</string>
     <string name="login_shell_bash">bash</string>
     <string name="login_shell_bash_desc">‎/bin/bash</string>
     <string name="login_shell_sh">sh</string>
     <string name="login_shell_sh_desc">‎/bin/sh</string>
     <string name="login_shell_ash">ash</string>
-    <string name="login_shell_ash_desc">‎/bin/ash (Alpine فقط — غير موجود في Kali لدينا)</string>
+    <string name="login_shell_ash_desc">‎/bin/ash</string>
 </resources>

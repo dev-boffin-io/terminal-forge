@@ -4,7 +4,7 @@
     <string name="use_shizuku">Auto Login to shizuku</string>
     <string name="use_shizuku_desc">Automatically execute rish command</string>
     <string name="default_working_mode">Default Working mode</string>
-    <string name="alpine_desc">Kali Linux</string>
+    <string name="alpine_desc">Alpine Linux</string>
     <string name="android_desc">Terminal Forge Android Shell</string>
     <string name="customizations">Customizations</string>
     <string name="seccomp">SECCOMP</string>
@@ -95,16 +95,16 @@
     <string name="rootfs_download_failed">Failed to download %1$s rootfs: %2$s</string>
     <string name="rootfs_not_installed_desc">Not installed yet — downloads on first use</string>
     <string name="root_detected_title">Root access detected</string>
-    <string name="root_detected_desc">This device appears to be rooted. Kali can run either through proot (userspace, no root needed, works everywhere) or through a real chroot (uses root, generally faster and more compatible). You can change this later in Settings → Execution Mode.</string>
+    <string name="root_detected_desc">This device appears to be rooted. Alpine can run either through proot (userspace, no root needed, works everywhere) or through a real chroot (uses root, generally faster and more compatible). You can change this later in Settings → Execution Mode.</string>
     <string name="use_chroot">Use chroot (root)</string>
     <string name="use_proot">Use proot</string>
     <string name="login_shell">Login Shell</string>
     <string name="login_shell_distro">Distro default</string>
-    <string name="login_shell_distro_desc">Whatever the distro uses for root (bash on our Kali)</string>
+    <string name="login_shell_distro_desc">Whatever the distro uses for root</string>
     <string name="login_shell_bash">bash</string>
     <string name="login_shell_bash_desc">/bin/bash</string>
     <string name="login_shell_sh">sh</string>
     <string name="login_shell_sh_desc">/bin/sh</string>
     <string name="login_shell_ash">ash</string>
-    <string name="login_shell_ash_desc">/bin/ash (Alpine only — not present in our Kali)</string>
+    <string name="login_shell_ash_desc">/bin/ash</string>
 </resources>

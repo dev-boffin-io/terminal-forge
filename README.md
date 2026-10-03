@@ -7,11 +7,11 @@ Download the latest APK from the [Releases Section](https://github.com/dev-boffi
 - [x] Basic Terminal
 - [x] Virtual Keys
 - [x] Multiple Sessions
-- [x] Debian, Kali Linux and Kali NetHunter sessions
+- [x] Debian, Alpine Linux and Kali NetHunter sessions
 - [x] Configurable Keyboard Shortcuts (Paste, Session Management)
 
 # Known Issues
-- On first boot on Kali rootfs, you may see:
+- On first boot on Alpine rootfs, you may see:
   ```
   tar: can't link 'usr/bin/perl' -> 'usr/bin/perl5.40.1': Permission denied
   ```

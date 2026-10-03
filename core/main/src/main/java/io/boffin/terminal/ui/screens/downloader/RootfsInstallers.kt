@@ -138,19 +138,18 @@ object NetHunterInstaller {
     }
 }
 
-// Base URL where the kali-<arch>.tar.gz.rootfs assets are published as GitHub Release
-// files. Update the tag if you publish the rootfs files under a different release.
-private const val KALI_RELEASE_BASE_URL =
-    "https://github.com/dev-boffin-io/terminal-forge/releases/download/rootfs-v1"
+// Base URL for upstream Alpine Linux minirootfs. Files follow the naming pattern:
+// alpine-minirootfs-<version>-<arch>.tar.gz under the current release directory.
+private const val ALPINE_RELEASE_BASE_URL =
+    "https://dl-cdn.alpinelinux.org/alpine/latest-stable/releases"
 
 /**
- * Kali Linux session (WorkingMode.ALPINE - the historical internal name). No longer downloaded
- * at app start: the Android shell is the landing screen and Kali is an on-demand install the
- * user triggers from "+" or Settings. Output filename and extraction dir are unchanged
- * (filesDir/alpine.tar.gz, local/alpine) so installs that already have Kali work exactly as
- * before and are never re-downloaded.
+ * Alpine Linux session (WorkingMode.ALPINE - the historical internal name). Downloaded on demand
+ * when the user triggers installation from "+" or Settings. Output filename and extraction dir
+ * are unchanged (filesDir/alpine.tar.gz, local/alpine) to preserve compatibility with existing
+ * installs.
  */
-object KaliInstaller {
+object AlpineInstaller {
     fun downloadIfNeeded(context: Context, onProgress: (Int) -> Unit) {
         val outputFile = context.filesDir.child("alpine.tar.gz")
         if (outputFile.exists() && outputFile.length() > 0L) {
@@ -162,19 +161,19 @@ object KaliInstaller {
             it in listOf("arm64-v8a", "armeabi-v7a", "x86_64")
         } ?: throw InstallException("Unsupported CPU architectures: ${abis.joinToString()}")
 
-        val debianArch = when (abi) {
+        val alpineArch = when (abi) {
             "arm64-v8a" -> "aarch64"
-            "armeabi-v7a" -> "armhf"
+            "armeabi-v7a" -> "armv7"
             "x86_64" -> "x86_64"
             else -> throw InstallException("Unsupported ABI: $abi")
         }
 
         downloadUrlToFile(
-            url = "$KALI_RELEASE_BASE_URL/kali-$debianArch.tar.gz.rootfs",
+            url = "$ALPINE_RELEASE_BASE_URL/$alpineArch/alpine-minirootfs-latest-$alpineArch.tar.gz",
             outputFile = outputFile,
             connectTimeoutMs = 15_000,
             readTimeoutMs = 15_000,
-            label = "Kali",
+            label = "Alpine",
             onProgress = onProgress
         )
     }

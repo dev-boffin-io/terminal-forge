@@ -4,7 +4,7 @@
     <string name="use_shizuku">自动登录 Shizuku</string>
     <string name="use_shizuku_desc">自动执行 rish 命令</string>
     <string name="default_working_mode">默认工作模式</string>
-    <string name="alpine_desc">Kali Linux</string>
+    <string name="alpine_desc">Alpine Linux</string>
     <string name="android_desc">Terminal Forge Android Shell</string>
     <string name="customizations">自定义</string>
     <string name="seccomp">SECCOMP</string>
@@ -72,16 +72,16 @@
     <string name="rootfs_download_failed">下载 %1$s rootfs 失败：%2$s</string>
     <string name="rootfs_not_installed_desc">尚未安装 — 首次使用时下载</string>
     <string name="root_detected_title">检测到 root 权限</string>
-    <string name="root_detected_desc">此设备似乎已 root。Kali 可以通过 proot（用户态，无需 root，处处可用）运行，也可以通过真正的 chroot 运行（需要 root，通常更快且兼容性更好）。之后可以在 设置 → Execution Mode 中更改。</string>
+    <string name="root_detected_desc">此设备似乎已 root。Alpine 可以通过 proot（用户态，无需 root，处处可用）运行，也可以通过真正的 chroot 运行（需要 root，通常更快且兼容性更好）。之后可以在 设置 → Execution Mode 中更改。</string>
     <string name="use_chroot">使用 chroot（root）</string>
     <string name="use_proot">使用 proot</string>
     <string name="login_shell">登录 Shell</string>
     <string name="login_shell_distro">发行版默认</string>
-    <string name="login_shell_distro_desc">发行版给 root 使用的 shell（我们的 Kali 为 bash）</string>
+    <string name="login_shell_distro_desc">发行版给 root 使用的 shell</string>
     <string name="login_shell_bash">bash</string>
     <string name="login_shell_bash_desc">/bin/bash</string>
     <string name="login_shell_sh">sh</string>
     <string name="login_shell_sh_desc">/bin/sh</string>
     <string name="login_shell_ash">ash</string>
-    <string name="login_shell_ash_desc">/bin/ash（仅 Alpine — 我们的 Kali 中没有）</string>
+    <string name="login_shell_ash_desc">/bin/ash</string>
 </resources>

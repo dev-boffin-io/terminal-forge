@@ -27,7 +27,7 @@ import com.rk.settings.Settings
 import io.boffin.terminal.ui.activities.terminal.MainActivity
 import io.boffin.terminal.ui.components.SettingsToggle
 import io.boffin.terminal.ui.routes.MainActivityRoutes
-import io.boffin.terminal.ui.screens.downloader.KaliInstaller
+import io.boffin.terminal.ui.screens.downloader.AlpineInstaller
 import io.boffin.terminal.ui.screens.downloader.RootfsInstallFlow
 import io.boffin.terminal.ui.screens.downloader.distroLabel
 import io.boffin.terminal.ui.screens.terminal.CustomSessions
@@ -87,7 +87,7 @@ object InputMode {
  * handed to init.sh as RETERM_LOGIN_SHELL, so don't renumber them.
  */
 object LoginShell {
-    /** Keep whatever the distro itself uses as root's shell (bash on our Debian-based Kali). */
+    /** Keep whatever the distro itself uses as root's shell. */
     const val DISTRO = 0
     const val BASH = 1
     const val SH = 2
@@ -110,8 +110,8 @@ fun Settings(
     var showAddCustomSession by remember { mutableStateOf(false) }
     var defaultIsCustom by remember { mutableStateOf(Settings.default_is_custom) }
     var defaultCustomId by remember { mutableStateOf(CustomSessions.getDefaultId()) }
-    var installingKali by remember { mutableStateOf(false) }
-    val isKaliInstalled = Rootfs.isInstalled.value
+    var installingAlpine by remember { mutableStateOf(false) }
+    val isAlpineInstalled = Rootfs.isInstalled.value
 
     fun saveWorkingMode(mode: Int) {
         defaultIsCustom = false
@@ -127,17 +127,17 @@ fun Settings(
     ) {
         PreferenceGroup(heading = stringResource(strings.default_working_mode)) {
             WorkingModeOption(
-                title = "Kali",
+                title = "Alpine",
                 description = stringResource(strings.alpine_desc) +
-                    if (isKaliInstalled) "" else "\n" + stringResource(strings.rootfs_not_installed_desc),
+                    if (isAlpineInstalled) "" else "\n" + stringResource(strings.rootfs_not_installed_desc),
                 selected = !defaultIsCustom && selectedWorkingMode == WorkingMode.ALPINE
             ) {
                 // Don't leave the default pointing at a rootfs that isn't there: install first, and
                 // only persist the choice once it succeeded (or the user backs out of the dialog).
-                if (isKaliInstalled) {
+                if (isAlpineInstalled) {
                     saveWorkingMode(WorkingMode.ALPINE)
                 } else {
-                    installingKali = true
+                    installingAlpine = true
                 }
             }
             WorkingModeOption(
@@ -314,17 +314,17 @@ fun Settings(
         )
     }
 
-    if (installingKali) {
+    if (installingAlpine) {
         RootfsInstallFlow(
             label = distroLabel(WorkingMode.ALPINE),
-            install = { onProgress -> KaliInstaller.downloadIfNeeded(context, onProgress) },
+            install = { onProgress -> AlpineInstaller.downloadIfNeeded(context, onProgress) },
             askExecMode = true,
             onReady = {
-                installingKali = false
+                installingAlpine = false
                 Rootfs.checkInstallation(context)
                 saveWorkingMode(WorkingMode.ALPINE)
             },
-            onDismiss = { installingKali = false }
+            onDismiss = { installingAlpine = false }
         )
     }
 }

@@ -1,9 +1,9 @@
-# Kali Linux (ARM64) — Perl Symlink Fix Note
+# Alpine Linux (ARM64) — Perl Symlink Fix Note (historical reference)
 
 **Repo:** [dev-boffin-io/terminal-forge](https://github.com/dev-boffin-io/terminal-forge)
 **Target hardware:** ReTerminal (or similar ARM64/aarch64 device)
 **Filesystem:** F2FS root
-**OS:** Minimal Kali Linux
+**OS:** Minimal Alpine Linux
 
 ---
 
@@ -55,7 +55,7 @@ This is perl 5, version 40, subversion 1 (v5.40.1) ...
 
 ## Tips for the Future
 
-- On a minimal Kali install, silence the welcome message with: `touch ~/.hushlogin`
+- On a minimal Alpine install, silence the welcome message with: `touch ~/.hushlogin`
 - On F2FS / locked images or immutable filesystems, `chattr -i` may be required.
 - Always run the following after any manual fix:
   ```bash

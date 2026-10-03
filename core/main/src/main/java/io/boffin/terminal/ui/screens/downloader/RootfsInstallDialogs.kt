@@ -40,7 +40,7 @@ typealias RootfsInstaller = (onProgress: (Int) -> Unit) -> Unit
 
 /** User-facing distro name for a working mode, used in install dialogs. */
 fun distroLabel(mode: Int): String = when (mode) {
-    WorkingMode.ALPINE -> "Kali"
+    WorkingMode.ALPINE -> "Alpine"
     WorkingMode.NETHUNTER -> "NetHunter"
     WorkingMode.BOFFIN -> "Boffin"
     else -> "Terminal Forge"
@@ -66,7 +66,7 @@ fun hasRootAccess(): Boolean {
 /**
  * Downloads a distro rootfs showing a progress indicator, and on failure an error with Retry/Close.
  *
- * Shared by the Kali, NetHunter and Boffin install paths so all three behave identically and a
+ * Shared by the Alpine, NetHunter and Boffin install paths so all three behave identically and a
  * failed download can be retried in place, leaving the caller free to stay on the Android shell.
  *
  * @param install blocking download work, run on IO and re-invoked on retry
@@ -182,14 +182,14 @@ fun ExecModeChoiceDialog(onChosen: () -> Unit) {
 }
 
 /**
- * Full on-demand install flow for a distro: download if the archive isn't there yet, then (for Kali,
+ * Full on-demand install flow for a distro: download if the archive isn't there yet, then (for Alpine,
  * and only the first time) settle chroot-vs-proot, then hand control back via [onReady].
  *
  * The exec-mode step is part of the flow on purpose - the question "root or proot?" is meaningless
- * until there is a rootfs to chroot into, and asking it before the user has ever opted into Kali
+ * until there is a rootfs to chroot into, and asking it before the user has ever opted into Alpine
  * would nag every Android-shell user on a rooted phone.
  *
- * @param askExecMode pass true for Kali, the only distro that supports chroot
+ * @param askExecMode pass true for Alpine, the only distro that supports chroot
  */
 @Composable
 fun RootfsInstallFlow(

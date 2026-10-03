@@ -97,7 +97,7 @@ object Settings {
 
     /**
      * Which shell exec'd as the interactive login shell inside a distro session. Only meaningful
-     * for the Alpine/Kali sessions - the Android shell has no distro to choose a shell in.
+     * for the Alpine sessions - the Android shell has no distro to choose a shell in.
      */
     var login_shell
         get() = Preference.getInt(key = "login_shell", default = LoginShell.DISTRO)

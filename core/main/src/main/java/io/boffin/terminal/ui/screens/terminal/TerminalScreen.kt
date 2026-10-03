@@ -38,7 +38,7 @@ import com.rk.settings.Settings
 import io.boffin.terminal.ui.activities.terminal.MainActivity
 import io.boffin.terminal.ui.activities.terminal.MainViewModel
 import io.boffin.terminal.ui.components.SetStatusBarTextColor
-import io.boffin.terminal.ui.screens.downloader.KaliInstaller
+import io.boffin.terminal.ui.screens.downloader.AlpineInstaller
 import io.boffin.terminal.ui.screens.downloader.NetHunterInstaller
 import io.boffin.terminal.ui.screens.downloader.RootfsInstallFlow
 import io.boffin.terminal.ui.screens.downloader.RootfsInstaller
@@ -86,7 +86,7 @@ fun TerminalScreen(
     }
 
     /**
-     * Puts [mode] through its on-demand install flow (download, then for Kali the chroot-vs-proot
+     * Puts [mode] through its on-demand install flow (download, then for Alpine the chroot-vs-proot
      * question) and only creates the session once the rootfs is actually usable. Distros whose
      * rootfs is already present skip straight to the session, so existing installs are unaffected.
      */
@@ -104,7 +104,7 @@ fun TerminalScreen(
     }
 
     fun downloaderFor(mode: Int): RootfsInstaller = when (mode) {
-        WorkingMode.ALPINE -> { onProgress -> KaliInstaller.downloadIfNeeded(context, onProgress) }
+        WorkingMode.ALPINE -> { onProgress -> AlpineInstaller.downloadIfNeeded(context, onProgress) }
         WorkingMode.NETHUNTER -> { onProgress -> NetHunterInstaller.downloadIfNeeded(context, onProgress) }
         WorkingMode.BOFFIN -> {
             // Either the URL the user just typed in, or whatever is already saved.
@@ -285,16 +285,16 @@ private fun AddSessionDialog(
     onCreateCustomSession: (CustomSession) -> Unit
 ) {
     val isArm64 = "arm64-v8a" in Build.SUPPORTED_ABIS
-    val isKaliInstalled = Rootfs.isInstalled.value
+    val isAlpineInstalled = Rootfs.isInstalled.value
     val customSessions = remember { CustomSessions.getAll() }
     BasicAlertDialog(onDismissRequest = onDismiss) {
         PreferenceGroup {
             SettingsCard(
-                title = { Text("Kali") },
+                title = { Text("Alpine") },
                 description = {
                     Text(
                         stringResource(strings.alpine_desc) +
-                            if (isKaliInstalled) "" else "\n" + stringResource(strings.rootfs_not_installed_desc)
+                            if (isAlpineInstalled) "" else "\n" + stringResource(strings.rootfs_not_installed_desc)
                     )
                 },
                 onClick = { onCreateSession(WorkingMode.ALPINE) }
