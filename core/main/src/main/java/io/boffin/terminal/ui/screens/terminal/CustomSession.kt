@@ -1,5 +1,6 @@
 package io.boffin.terminal.ui.screens.terminal
 
+import android.content.Context
 import com.rk.settings.Preference
 import com.rk.settings.Settings
 import io.boffin.terminal.ui.screens.settings.WorkingMode
@@ -62,7 +63,7 @@ object CustomSessions {
         Preference.setString(key = DEFAULT_ID_KEY, value = "")
     }
 
-    fun resolveDefaultSession(): Pair<Int, CustomSession?> {
+    fun resolveDefaultSession(context: Context): Pair<Int, CustomSession?> {
         return if (Settings.default_is_custom) {
             val id = getDefaultId()
             val session = id?.let { getById(it) }
@@ -70,10 +71,10 @@ object CustomSessions {
                 WorkingMode.ALPINE to session
             } else {
                 Settings.default_is_custom = false
-                Settings.working_Mode to null
+                Rootfs.resolveUsableMode(context, Settings.working_Mode) to null
             }
         } else {
-            Settings.working_Mode to null
+            Rootfs.resolveUsableMode(context, Settings.working_Mode) to null
         }
     }
 

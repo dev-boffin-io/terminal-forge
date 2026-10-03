@@ -28,7 +28,7 @@ class SessionService : Service() {
     private val sessions = hashMapOf<String, TerminalSession>()
     val sessionList = mutableStateMapOf<String, Int>()
     val sessionOrder = mutableStateListOf<String>()
-    private val initialMode = CustomSessions.resolveDefaultSession()
+    private val initialMode = CustomSessions.resolveDefaultSession(this)
     var currentSession = mutableStateOf(Pair("main", initialMode.first))
     var currentCustomSession = initialMode.second
 
@@ -74,7 +74,11 @@ class SessionService : Service() {
             if (sessions.containsKey(trimmed)) return false
 
             val session = sessions.remove(oldId) ?: return false
-            val mode = sessionList.remove(oldId) ?: com.rk.settings.Settings.working_Mode
+            val mode = sessionList.remove(oldId)
+                ?: io.boffin.terminal.ui.screens.terminal.Rootfs.resolveUsableMode(
+                    this@SessionService,
+                    com.rk.settings.Settings.working_Mode
+                )
             sessions[trimmed] = session
             sessionList[trimmed] = mode
 

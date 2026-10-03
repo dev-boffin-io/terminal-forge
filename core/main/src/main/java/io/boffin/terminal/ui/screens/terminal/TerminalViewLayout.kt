@@ -59,7 +59,7 @@ fun TerminalViewLayout(
                                 sessionBinder.createSession(
                                     service.currentSession.value.first,
                                     client,
-                                    Settings.working_Mode
+                                    Rootfs.resolveUsableMode(ctx, Settings.working_Mode)
                                 )
                             }
                         }

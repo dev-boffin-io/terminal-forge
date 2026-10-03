@@ -56,7 +56,7 @@ class TerminalViewModel : ViewModel() {
                     val pendingCommand = MkSession.buildCustomPendingCommand(context, custom)
                     sessionBinder.createSession(sessionId, client, WorkingMode.ALPINE, pendingCommand)
                 } else {
-                    sessionBinder.createSession(sessionId, client, Settings.working_Mode)
+                    sessionBinder.createSession(sessionId, client, Rootfs.resolveUsableMode(context, Settings.working_Mode))
                 }
             }
             
@@ -83,6 +83,6 @@ class TerminalViewModel : ViewModel() {
             virtualKeysViewClient = terminal.mTermSession?.let { VirtualKeysListener(it) }
         }
         
-        sessionBinder.getService().currentSession.value = Pair(sessionId, sessionBinder.getService().sessionList[sessionId] ?: Settings.working_Mode)
+        sessionBinder.getService().currentSession.value = Pair(sessionId, sessionBinder.getService().sessionList[sessionId] ?: Rootfs.resolveUsableMode(context, Settings.working_Mode))
     }
 }
