@@ -2,6 +2,7 @@ package io.boffin.terminal.ui.screens.terminal
 
 import android.content.Context
 import com.rk.libcommons.alpineHomeDir
+import com.rk.libcommons.androidHomeDir
 import com.rk.libcommons.child
 import com.rk.libcommons.createFileIfNot
 import com.rk.libcommons.localBinDir
@@ -41,7 +42,8 @@ object MkSession {
             val workingDir = pendingCommand?.workingDir ?: when (workingMode) {
                 WorkingMode.NETHUNTER -> nethunterHomeDir().path
                 WorkingMode.BOFFIN -> boffinHomeDir().path
-                else -> alpineHomeDir().path
+                WorkingMode.ALPINE -> alpineHomeDir().path
+                else -> androidHomeDir().path
             }
 
             val useChroot = workingMode == WorkingMode.ALPINE && Rootfs.execMode.value == ExecMode.CHROOT

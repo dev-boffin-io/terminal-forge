@@ -30,6 +30,18 @@ fun Context.alpineHomeDir(): File {
     }
 }
 
+// Home dir for the plain Android (non-rootfs) shell. Deliberately lives outside localDir()'s
+// distro tree so that launching an Android session never creates - or depends on - a distro
+// directory. Falls back to localDir() if external storage is unavailable.
+fun Context.androidHomeDir(): File {
+    val preferred = File(getExternalFilesDir(null) ?: filesDir, "home")
+    return preferred.also {
+        if (!it.exists()) {
+            it.mkdirs()
+        }
+    }
+}
+
 // "Custom" session dir (formerly the dedicated NetHunter feature). Function/dir names kept
 // as "nethunter" so existing installs' already-downloaded rootfs keeps working unchanged.
 fun Context.nethunterDir(): File {
