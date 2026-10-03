@@ -59,6 +59,49 @@ private fun downloadUrlToFile(
 }
 
 /**
+ * Copies an asset out of the APK into context.filesDir/<outputFileName>, chunked with a progress
+ * callback, via a .part temp file + atomic rename on success — deliberately the same shape as
+ * [downloadUrlToFile], so the shared download dialog can't tell the two apart.
+ *
+ * The temp file matters more here than it does over HTTP: [Rootfs.isRootfsInstalled] counts a
+ * merely *existing* filesDir/alpine.tar.gz as a finished install, so a copy interrupted by the
+ * process dying mid-write would otherwise leave a truncated archive for `tar -xf` to choke on.
+ *
+ * @param totalBytes asset size when it can be read up front, else -1 to leave progress indeterminate
+ */
+private fun copyAssetToFile(
+    context: Context,
+    assetName: String,
+    outputFile: File,
+    totalBytes: Long,
+    label: String,
+    onProgress: (Int) -> Unit
+) {
+    val tempFile = File(outputFile.path + ".part")
+
+    context.assets.open(assetName).use { input ->
+        FileOutputStream(tempFile).use { output ->
+            val buffer = ByteArray(64 * 1024)
+            var bytesRead: Int
+            var totalRead = 0L
+            while (input.read(buffer).also { bytesRead = it } != -1) {
+                output.write(buffer, 0, bytesRead)
+                totalRead += bytesRead
+                if (totalBytes > 0) {
+                    onProgress(((totalRead * 100) / totalBytes).toInt().coerceIn(0, 100))
+                }
+            }
+        }
+    }
+
+    if (!tempFile.renameTo(outputFile)) {
+        tempFile.delete()
+        throw InstallException("Failed to finalize bundled $label rootfs")
+    }
+    onProgress(100)
+}
+
+/**
  * Fetches a manifest.json, then downloads whatever URL it contains, into
  * context.filesDir/<outputFileName>. The manifest is a tiny JSON file kept in the repo
  * (NOT bundled as an APK asset) so its content — the actual rootfs download URL — can be
@@ -138,16 +181,18 @@ object NetHunterInstaller {
     }
 }
 
-// Base URL for upstream Alpine Linux minirootfs. Files follow the naming pattern:
-// alpine-minirootfs-<version>-<arch>.tar.gz under the current release directory.
-private const val ALPINE_RELEASE_BASE_URL =
-    "https://dl-cdn.alpinelinux.org/alpine/latest-stable/releases"
+// Alpine's minirootfs archives are bundled as APK assets under this naming pattern:
+// alpine-<arch>.tar.gz.rootfs, one per supported ABI, in core/main/src/main/assets/.
+private const val ALPINE_ARCHIVE_ASSET_PREFIX = "alpine-"
+private const val ALPINE_ARCHIVE_ASSET_SUFFIX = ".tar.gz.rootfs"
 
 /**
- * Alpine Linux session (WorkingMode.ALPINE - the historical internal name). Downloaded on demand
- * when the user triggers installation from "+" or Settings. Output filename and extraction dir
- * are unchanged (filesDir/alpine.tar.gz, local/alpine) to preserve compatibility with existing
- * installs.
+ * Alpine Linux session (WorkingMode.ALPINE - the historical internal name). Installed on demand
+ * when the user triggers installation from "+" or Settings, by unpacking the archive bundled in the
+ * APK rather than fetching it over the network: Alpine's CDN started answering 404 for the
+ * minirootfs path this used to hit, and a working terminal shouldn't depend on a third-party mirror
+ * anyway. Output filename and extraction dir are unchanged (filesDir/alpine.tar.gz, local/alpine)
+ * so existing installs keep working and never re-extract.
  */
 object AlpineInstaller {
     fun downloadIfNeeded(context: Context, onProgress: (Int) -> Unit) {
@@ -161,18 +206,28 @@ object AlpineInstaller {
             it in listOf("arm64-v8a", "armeabi-v7a", "x86_64")
         } ?: throw InstallException("Unsupported CPU architectures: ${abis.joinToString()}")
 
+        // Note armeabi-v7a -> "armhf", which is what the bundled asset is called. The CDN path
+        // (and the old downloader) spelled that same ABI "armv7"; the asset filename wins now
+        // that the archive ships in the APK.
         val alpineArch = when (abi) {
             "arm64-v8a" -> "aarch64"
-            "armeabi-v7a" -> "armv7"
+            "armeabi-v7a" -> "armhf"
             "x86_64" -> "x86_64"
             else -> throw InstallException("Unsupported ABI: $abi")
         }
 
-        downloadUrlToFile(
-            url = "$ALPINE_RELEASE_BASE_URL/$alpineArch/alpine-minirootfs-latest-$alpineArch.tar.gz",
+        val assetName = "$ALPINE_ARCHIVE_ASSET_PREFIX$alpineArch$ALPINE_ARCHIVE_ASSET_SUFFIX"
+        // openFd only works on assets the APK stores uncompressed, and .rootfs isn't in the default
+        // noCompress list; when it throws we fall back to -1 and show an indeterminate spinner.
+        val totalBytes = runCatching {
+            context.assets.openFd(assetName).use { it.length }
+        }.getOrDefault(-1L)
+
+        copyAssetToFile(
+            context = context,
+            assetName = assetName,
             outputFile = outputFile,
-            connectTimeoutMs = 15_000,
-            readTimeoutMs = 15_000,
+            totalBytes = totalBytes,
             label = "Alpine",
             onProgress = onProgress
         )
