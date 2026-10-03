@@ -16,9 +16,7 @@ import io.boffin.terminal.ui.activities.terminal.MainActivity
 import io.boffin.terminal.ui.animations.NavigationAnimationTransitions
 import io.boffin.terminal.ui.routes.MainActivityRoutes
 import io.boffin.terminal.ui.screens.customization.Customization
-import io.boffin.terminal.ui.screens.downloader.SetupScreen
 import io.boffin.terminal.ui.screens.settings.Settings
-import io.boffin.terminal.ui.screens.terminal.Rootfs
 import io.boffin.terminal.ui.screens.terminal.TerminalScreen
 
 @Composable
@@ -40,18 +38,14 @@ fun MainActivityNavHost(
         modifier = modifier
     ) {
         composable(MainActivityRoutes.MainScreen.route) {
-            if (Rootfs.isInstalled.value) {
-                val config = LocalConfiguration.current
-                val show = if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-                    horizontalStatusBar
-                } else {
-                    showStatusBar
-                }
-                UpdateStatusBar(mainActivity.window, show)
-                TerminalScreen(mainActivity = mainActivity, navController = navController)
+            val config = LocalConfiguration.current
+            val show = if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+                horizontalStatusBar
             } else {
-                SetupScreen(mainActivity = mainActivity, navController = navController)
+                showStatusBar
             }
+            UpdateStatusBar(mainActivity.window, show)
+            TerminalScreen(mainActivity = mainActivity, navController = navController)
         }
         
         composable(MainActivityRoutes.Settings.route) {
